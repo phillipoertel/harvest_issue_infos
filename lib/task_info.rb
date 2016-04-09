@@ -9,17 +9,20 @@ class TaskInfo
   end
 
   def initialize(project_id, gh_issue)
-    @project = harvest.projects.all.find { |p| p.id == project_id }
+    @project  = harvest.projects.all.find { |p| p.id == project_id }
     @gh_issue = gh_issue
+    @time_entries  = {}
   end
 
   def time_entries
-    # FIXME adapt time range
-    @entries ||= begin
-      report = harvest.reports.time_by_project(@project, start_date, end_date)
-      entries_for_issue = report.select { |e| e.notes =~ /##{@issue_number}/ }
-      entries_for_issue.map { |e| TimeEntry.new(e, @issue_number) }
+    @time_entries[issue_number] ||= begin
+      entries_for_issue = harvest_project_report.select { |e| e.notes =~ /##{issue_number}/ }
+      entries_for_issue.map { |e| TimeEntry.new(e, issue_number) }
     end
+  end
+
+  def harvest_project_report
+    @harvest_project_report ||= harvest.reports.time_by_project(@project, start_date, end_date)
   end
 
   def issue_number
@@ -40,6 +43,7 @@ class TaskInfo
     Harvest::ApiClient.instance
   end
 
+  # FIXME adapt time range
   def start_date
     Time.parse("2016-03-29")
   end

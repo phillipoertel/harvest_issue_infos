@@ -13,6 +13,9 @@ class Runner
     @client_config = client_config
   end
 
+  # TOOO
+  # - list total summary
+  # - list untagged entries
   def run
     task_infos.each do |info|
       puts "##{info.issue_number}: #{info.issue_title}"
