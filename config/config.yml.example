@@ -1,0 +1,13 @@
+harvest:
+  subdomain: domain
+  username: user
+  password: pass
+clients:
+  name1: 
+    harvest_client_id: 34234234
+    repository: org-name/repo-name
+    assignee: ghusername
+  name2: 
+    harvest_client_id: 3453453
+    repository: org-name/repo-name
+    assignee: ghusername
