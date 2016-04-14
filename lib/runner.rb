@@ -13,14 +13,26 @@ class Runner
     @client_config = client_config
   end
 
-  # TOOO
-  # - list total summary
-  # - list untagged entries
   def run
+    sum = 0
+    puts
+    puts "Summary"
+    puts "-" * 80
+    puts
     task_infos.each do |info|
-      puts "##{info.issue_number}: #{info.issue_title}"
-      puts "Total hours: #{info.hours.round(2)}h"
-      puts "-" * 80
+      puts "#%-5d %-47s %-5s" % [info.issue_number, info.issue_title[0, 45], info.hours.round(2).to_s]
+      sum += info.hours
+    end
+    puts "Total hours: %46s" % sum.round(2).to_s
+    puts
+    puts
+    puts "Details"
+    puts "-" * 80
+    puts
+    task_infos.each do |info|
+      title = "##{info.issue_number} #{info.issue_title} (#{info.hours.round(2)}h)"
+      puts title
+      puts '-' * title.length
       info.time_entries.each do |i|
         puts "%s %s (%sh)" % [i.spent_at, i.notes, i.hours]
       end
@@ -32,8 +44,11 @@ class Runner
 
   def task_infos
     @task_infos ||= begin
-      issues = Github.issues(client_config["repository"], client_config["assignee"])
-      issues.map { |issue| TaskInfo.for(client_config["harvest_client_id"], issue) }
+      Github
+        .issues(client_config["repository"], client_config["assignee"])
+        .map { |issue| TaskInfo.for(client_config, issue) }
+        .reject { |issue| issue.time_entries.empty? }
+        .sort_by(&:issue_number)
     end
   end
 

@@ -4,13 +4,14 @@ require 'time_entry'
 # given a task id, returns the harvest time entries and the sum of work
 class TaskInfo
 
-  def self.for(project_id, gh_issue)
-    new(project_id, gh_issue)
+  def self.for(client_config, gh_issue)
+    new(client_config, gh_issue)
   end
 
-  def initialize(project_id, gh_issue)
-    @project  = harvest.projects.all.find { |p| p.id == project_id }
-    @gh_issue = gh_issue
+  def initialize(client_config, gh_issue)
+    @client_config = client_config
+    @project       = harvest.projects.all.find { |p| p.id == client_config['harvest_client_id'] }
+    @gh_issue      = gh_issue
     @time_entries  = {}
   end
 
@@ -22,7 +23,9 @@ class TaskInfo
   end
 
   def harvest_project_report
-    @harvest_project_report ||= harvest.reports.time_by_project(@project, start_date, end_date)
+    @@harvest_project_report ||= begin
+      harvest.reports.time_by_project(@project, start_date, end_date).reject(&:is_billed)
+    end
   end
 
   def issue_number
@@ -43,9 +46,9 @@ class TaskInfo
     Harvest::ApiClient.instance
   end
 
-  # FIXME adapt time range
   def start_date
-    Time.parse("2016-03-29")
+    # yaml seems to parse it to a date already
+    @client_config['project_start_date']
   end
 
   def end_date
@@ -53,7 +56,6 @@ class TaskInfo
   end
 
 end
-
 
 
 __END__

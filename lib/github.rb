@@ -13,7 +13,7 @@ class Github
   end
 
   def issues(repository, assignee)
-    @issues[repository] ||= Octokit.issues(repository, assignee: assignee, per_page: 100)
+    @issues[repository] ||= Octokit.issues(repository, assignee: assignee, state: :all, per_page: 100)
   end
 
 end
